@@ -30,11 +30,18 @@ public class DownloadService extends Service {
             ArrayList<String> where = intent.getStringArrayListExtra("where");
             ArrayList<String> filenames = intent.getStringArrayListExtra("filenames");
             for (int i = 0; i < filenames.size(); i++) {
+
                 downloadToSave(where.get(i), filenames.get(i));
                 Intent intent1 = new Intent();
                 intent1.setAction("download_ok");
                 intent1.putExtra("filename", filenames.get(i));
                 sendBroadcast(intent1);
+
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

@@ -43,6 +43,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     ArrayList<String> sel_pics, filenames;
 
     HandlerThread MainUI_ht;
+    Handler sel_picsHandler;
     protected int PIC_SELECTED = 1;
 
     public void setInitialValue(){
@@ -65,9 +66,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         filter.addAction("download_ok");
         filter.addAction("pic_selected");
         registerReceiver(receiver, filter);
-
-        MainUI_ht = new HandlerThread("MainUI_ht");
-        MainUI_ht.start();
     }
 
     @Override
@@ -81,12 +79,11 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         EditText URLInput = findViewById(R.id.webpage_url);
         String webpage_url = URLInput.getText().toString();
 
-        if (!webpage_url.equals("")) { return; }    //prevent empty strings
-
-        running = true;
-
-        setInitialValue();
-        startDownloading(webpage_url);
+        if (!webpage_url.equals("")) {    //prevent empty strings
+            running = true;
+            setInitialValue();
+            startDownloading(webpage_url);
+        }
     }
 
     public void startDownloading(String webpage_url){
@@ -94,16 +91,17 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             @Override
             public void run() {
                 ArrayList<String> urls = getUrls(webpage_url, max_pics);
-                if (urls == null || urls.size() == 0) { return; }  //invalid website
+                if (urls != null & urls.size() > 0) {   //invalid website
 
-                File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                ArrayList<String> filenames = makeFileNames(dir, urls);
+                    File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                    ArrayList<String> filenames = makeFileNames(dir, urls);
 
-                Intent intent = new Intent(SelectPictures.this, DownloadService.class);
-                intent.setAction("download");
-                intent.putStringArrayListExtra("filenames", filenames);
-                intent.putStringArrayListExtra("where", urls);
-                startService(intent);
+                    Intent intent = new Intent(SelectPictures.this, DownloadService.class);
+                    intent.setAction("download");
+                    intent.putStringArrayListExtra("filenames", filenames);
+                    intent.putStringArrayListExtra("where", urls);
+                    startService(intent);
+                }
             }
         });
 
@@ -129,7 +127,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         if (urls.size() > max_pics)
             urls = urls.subList(0, max_pics);
 
-        ArrayList<String> out = (ArrayList<String>) urls;
+        ArrayList<String> out = new ArrayList<String>(urls);
 
         return out;
     }
@@ -137,8 +135,11 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected ArrayList<String> makeFileNames(File dir, List<String> urls) {
         ArrayList<String> out = new ArrayList<>();
 
-        for (int i = 0; i < urls.size(); i++)
+        for (int i = 0; i < urls.size(); i++) {
             out.add(new File(dir + "/" + new File(urls.get(i)).getName()).toString());
+            System.out.println(out.get(i));
+        }
+
 
         return out;
     }
@@ -159,29 +160,10 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                     findViewById(R.id.barText).setVisibility(View.GONE);
                     findViewById(R.id.instruction).setVisibility(View.VISIBLE);
                     running = false;    // computation done
+
+                    waitForSelectedPics();
                 }
             }
-//            if (action.equals("pic_selected")) {
-//                if(pos == max_pics -1) {
-//                    int index = Integer.parseInt(intent.getStringExtra("index"));
-//                    int id = getResources().getIdentifier("imageView" + index,"id", getPackageName());
-//                    ImageView imgView = findViewById(id);
-//                    if (!sel_pics.contains(filenames.get(index))){
-//                        sel_pics.add(filenames.get(index));
-//                        nsel++;
-//                        imgView.setImageAlpha(150);
-//                        if (nsel == max_sel) {
-//                            stopService(new Intent(SelectPictures.this, DownloadService.class));
-//                            play_game(sel_pics);
-//                        }
-//                    }else{
-//                        sel_pics.remove(filenames.get(index));
-//                        nsel--;
-//                        //change back to original ImageAlpha
-//                        imgView.setImageAlpha(255);
-//                    }
-//                }
-//            }
         }
     };
 
@@ -189,32 +171,27 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected void imageToImageView(String filename, int pos) {
         Bitmap bitmap = BitmapFactory.decodeFile(filename);
 
-        if (bitmap == null) { return; }
+        if (bitmap != null) {
+            int id = getResources().getIdentifier("imageView" + pos, "id", getPackageName());
+            ImageView imgView = findViewById(id);
+            imgView.setVisibility(View.VISIBLE);
 
-        int id = getResources().getIdentifier("imageView" + pos,"id", getPackageName());
-        ImageView imgView = findViewById(id);
-        imgView.setVisibility(View.VISIBLE);
+            int[] arr = {bitmap.getWidth(), bitmap.getHeight(), imgView.getWidth(), imgView.getHeight()};
+            int dim = Arrays.stream(arr).filter(x -> x > 0).min().getAsInt();
+            Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, dim, dim);
+            imgView.setImageBitmap(resized);
 
-        int[] arr = {bitmap.getWidth(), bitmap.getHeight(), imgView.getWidth(), imgView.getHeight()};
-        int dim = Arrays.stream(arr).filter(x -> x > 0).min().getAsInt();
-        Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, dim, dim);
-        imgView.setImageBitmap(resized);
+            imgView.setOnClickListener(view -> {
+                long min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
+                int index = (int) (view.getUniqueDrawingId() - min_ImageView_id);
 
-        imgView.setOnClickListener(view -> {
-            long min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
-            long index = view.getUniqueDrawingId() - min_ImageView_id;
+                Message clicked = new Message();
+                clicked.what = PIC_SELECTED;
+                clicked.obj = index;
 
-//            Intent intent = new Intent();
-//            intent.setAction("pic_selected");
-//            intent.putExtra("index", String.valueOf(index));
-//            sendBroadcast(intent);
-
-            Message clicked = new Message();
-            clicked.what = PIC_SELECTED;
-            clicked.obj = index;
-
-            sel_picsHandler.sendMessage(clicked);
-        });
+                sel_picsHandler.sendMessage(clicked);
+            });
+        }
     }
 
     protected void updateProgressBar(int pos, int max_pics) {
@@ -228,32 +205,34 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         progressBarStatus.setVisibility(View.VISIBLE);
     }
 
+    protected void waitForSelectedPics() {
+        MainUI_ht = new HandlerThread("MainUI_ht");
+        MainUI_ht.start();
 
-    @SuppressLint("HandlerLeak")
-    Handler sel_picsHandler = new Handler(MainUI_ht.getLooper()) {
-        public void handleMessage(@NonNull Message msg) {
-            if (msg.what != PIC_SELECTED) { return; }
-            if (pos < max_pics - 1) { return; }   // selection of pictures start only after all pics are donwloaded
+        sel_picsHandler = new Handler(MainUI_ht.getLooper()) {
+            public void handleMessage(@NonNull Message msg) {
+                if (msg.what == PIC_SELECTED & pos == max_pics - 1) { // selection of pictures start only after all pics are donwloaded
+                    int index = (int) msg.obj;
+                    int id = getResources().getIdentifier("imageView" + index, "id", getPackageName());
+                    ImageView imgView = findViewById(id);
 
-            int index = (int) msg.obj;
-            int id = getResources().getIdentifier("imageView" + index, "id", getPackageName());
-            ImageView imgView = findViewById(id);
+                    if (!sel_pics.contains(filenames.get(index))) {
+                        sel_pics.add(filenames.get(index));
+                        nsel++;
+                        imgView.setImageAlpha(150);
 
-            if (!sel_pics.contains(filenames.get(index))) {
-                sel_pics.add(filenames.get(index));
-                nsel++;
-                imgView.setImageAlpha(150);
+                    } else {
+                        sel_pics.remove(filenames.get(index));
+                        nsel--;
+                        imgView.setImageAlpha(255);     //change back to original ImageAlpha
+                    }
 
-            } else {
-                sel_pics.remove(filenames.get(index));
-                nsel--;
-                imgView.setImageAlpha(255);     //change back to original ImageAlpha
+                    if (nsel == max_sel)
+                        play_game(sel_pics);
+                }
             }
-
-            if (nsel == max_sel)
-                play_game(sel_pics);
-        }
-    };
+        };
+    }
 
     protected void play_game(ArrayList<String> sel_pics) {
         Intent play_game = new Intent(this, PlayGame.class);
