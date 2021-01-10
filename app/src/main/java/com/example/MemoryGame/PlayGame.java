@@ -1,9 +1,8 @@
-package com.example.memory_game;
+package com.example.MemoryGame;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -17,7 +16,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 
-public class MainActivity2 extends AppCompatActivity {
+public class PlayGame extends AppCompatActivity {
 
     int N_pairs;
     int prev_i = -1;
@@ -48,18 +47,18 @@ public class MainActivity2 extends AppCompatActivity {
 
     private void correct(){
         correct.reset();
-        correct=MediaPlayer.create(MainActivity2.this, R.raw.correct);
+        correct=MediaPlayer.create(PlayGame.this, R.raw.correct);
         correct.start();
     }
 
     private void wrong(){
         wrong.reset();
-        wrong=MediaPlayer.create(MainActivity2.this, R.raw.wrong);
+        wrong=MediaPlayer.create(PlayGame.this, R.raw.wrong);
         wrong.start();
     }
     private void victory(){
         victory.reset();
-        victory=MediaPlayer.create(MainActivity2.this, R.raw.victory);
+        victory=MediaPlayer.create(PlayGame.this, R.raw.victory);
         victory.start();
     }
     protected void playMemoryGame(ArrayList<String> sel_pics) {
@@ -135,7 +134,7 @@ public class MainActivity2 extends AppCompatActivity {
                             @Override
                             public void run() {
                                 timer.stop();
-                                Intent result = new Intent(MainActivity2.this, ResultActivity.class);
+                                Intent result = new Intent(PlayGame.this, SelectPictures.class);
                                 result.putExtra("time", timer.getCountUpTime());
                                 finish();
                                 startActivity(result);
@@ -153,8 +152,8 @@ public class MainActivity2 extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            curr_imgView.setImageResource(MainActivity2.this.getResources().getIdentifier("question","drawable",MainActivity2.this.getPackageName()));
-                            prev_imgView.setImageResource(MainActivity2.this.getResources().getIdentifier("question","drawable",MainActivity2.this.getPackageName()));
+                            curr_imgView.setImageResource(PlayGame.this.getResources().getIdentifier("question","drawable", PlayGame.this.getPackageName()));
+                            prev_imgView.setImageResource(PlayGame.this.getResources().getIdentifier("question","drawable", PlayGame.this.getPackageName()));
                         }
                     });
                 }

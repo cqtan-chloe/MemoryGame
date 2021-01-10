@@ -1,4 +1,4 @@
-package com.example.memory_game;
+package com.example.MemoryGame;
 
 import android.os.CountDownTimer;
 import android.widget.TextView;

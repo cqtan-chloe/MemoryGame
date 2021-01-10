@@ -1,4 +1,4 @@
-package com.example.memory_game;
+package com.example.MemoryGame;
 
 import android.app.Service;
 import android.content.Intent;
@@ -22,39 +22,20 @@ import java.util.concurrent.TimeUnit;
 
 public class DownloadService extends Service {
 
-//    private ArrayList<Thread> threadList = new ArrayList<>();
-    private Thread bkgthread2;
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         String action = intent.getAction();
         if (action.compareToIgnoreCase("download") == 0) {
-            bkgthread2 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ArrayList<String> where = intent.getStringArrayListExtra("where");
-                    ArrayList<String> filenames = intent.getStringArrayListExtra("filenames");
-                    for (int i = 0; i < filenames.size(); i++) {
-
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(250);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            return;
-                        }
-                        if (Thread.interrupted()){
-                            return;
-                        }
-                        downloadToSave(where.get(i), filenames.get(i));
-                        Intent intent = new Intent();
-                        intent.setAction("download_ok");
-                        intent.putExtra("filename", filenames.get(i));
-                        sendBroadcast(intent);
-                    }
-                }
-            });
-            bkgthread2.start();
+            ArrayList<String> where = intent.getStringArrayListExtra("where");
+            ArrayList<String> filenames = intent.getStringArrayListExtra("filenames");
+            for (int i = 0; i < filenames.size(); i++) {
+                downloadToSave(where.get(i), filenames.get(i));
+                Intent intent1 = new Intent();
+                intent1.setAction("download_ok");
+                intent1.putExtra("filename", filenames.get(i));
+                sendBroadcast(intent1);
+            }
         }
 
         // don't restart this task if killed by Android system
@@ -87,17 +68,6 @@ public class DownloadService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        bkgthread2.interrupt();
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(DownloadService.this,
-                        getString(R.string.service_ended),
-                        Toast.LENGTH_LONG).show();
-            }
-        });
     }
 
     @Override
