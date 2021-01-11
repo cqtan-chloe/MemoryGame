@@ -32,17 +32,14 @@ public class DownloadService extends Service {
         {
             String where = intent.getStringExtra("where");
             String filename = intent.getStringExtra("filename");
-            String downloadThread_name_return = intent.getStringExtra("downloadThread_name");
-            String webpage_url_return = intent.getStringExtra("webpage_url");
+            String search_session_id_return = intent.getStringExtra("search_session_id");
 
             downloadToSave(where, filename);
             Intent intent1 = new Intent();
             intent1.setAction("download_ok");
             intent1.putExtra("filename", filename);
-            intent1.putExtra("downloadThread_name_return", downloadThread_name_return);
-            intent1.putExtra("webpage_url_return", webpage_url_return);
+            intent1.putExtra("search_session_id_return", search_session_id_return);
             sendBroadcast(intent1);
-
         }
 
         // don't restart this task if killed by Android system

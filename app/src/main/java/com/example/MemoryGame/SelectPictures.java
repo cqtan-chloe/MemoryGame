@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
@@ -39,7 +40,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
     int max_pics = 20;
     int max_sel = 6;
-    Thread downloadThread;
     private boolean running = false;
     int pos, nsel;
     ArrayList<String> sel_pics, filenames;
@@ -47,10 +47,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     HandlerThread MainUI_ht;
     Handler sel_picsHandler;
     protected int PIC_SELECTED = 1;
-
-    private String downloadThread_name;
-
-    String webpage_url;
 
     public void setInitialValue(){
         pos = -1;
@@ -72,22 +68,25 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         registerReceiver(receiver, filter);
     }
 
+    private int search_session_id = 0;
+
     @Override
     public void onClick(View v) {
         if (running) {    // if the download process is already running
             stopService(new Intent(SelectPictures.this, DownloadService.class));
-            downloadThread.interrupt();
             running = false;
             resetUI();
         }
 
         EditText URLInput = findViewById(R.id.webpage_url);
-        webpage_url = URLInput.getText().toString();
+        String webpage_url = URLInput.getText().toString();
 
         if (!webpage_url.equals("")) {    //prevent empty strings
             running = true;
             setInitialValue();
-            startDownloading(webpage_url);
+
+            search_session_id++;
+            new Thread(new StartDownloading(webpage_url, search_session_id)).start();
         }
     }
 
@@ -99,47 +98,45 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void startDownloading(String webpage_url){
-        downloadThread = new Thread(new Runnable() {
+    class StartDownloading implements Runnable {
+        String webpage_url;
+        int search_session_id;
 
-            long downloadThread_id = Thread.currentThread().getId(); // internal copy of thread id
+        StartDownloading (String webpage_url, int search_session_id) {
+            this.webpage_url = webpage_url;
+            this.search_session_id = search_session_id;
+        }
 
-            @Override
-            public void run() {
-                ArrayList<String> urls = getUrls(webpage_url, max_pics);
-                if (urls != null & urls.size() > 0) {   //invalid website
+        @Override
+        public void run() {
+            ArrayList<String> urls = getUrls(webpage_url, max_pics);
+            if (urls != null & urls.size() > 0) {   //invalid website
 
-                    File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                    ArrayList<String> filenames = makeFileNames(dir, urls);
+                File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                ArrayList<String> filenames = makeFileNames(dir, urls);
 
-                    for (int i = 0; i < filenames.size(); i++) {
+                for (int i = 0; i < filenames.size(); i++) {
 
-                        if (Thread.interrupted() | pos == max_pics - 1)
-                            return;
+                    if (pos == max_pics - 1)
+                        return;
 
-                        Intent intent = new Intent(SelectPictures.this, DownloadService.class);
-                        intent.setAction("download");
-                        intent.putExtra("filename", filenames.get(i));
-                        intent.putExtra("where", urls.get(i));
-                        intent.putExtra("downloadThread_name", downloadThread_name);
-                        intent.putExtra("webpage_url", webpage_url);
-                        startService(intent);
+                    Intent intent = new Intent(SelectPictures.this, DownloadService.class);
+                    intent.setAction("download");
+                    intent.putExtra("filename", filenames.get(i));
+                    intent.putExtra("where", urls.get(i));
+                    intent.putExtra("search_session_id", Integer.toString(search_session_id));
+                    startService(intent);
 
-                        try {
-                            TimeUnit.SECONDS.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
-
-        });
-
-        downloadThread.start();
-
-        downloadThread_name = downloadThread.getName(); // get another copy of thread id
+        }
     }
+
 
     protected ArrayList<String> getUrls(String webpage_url, int max_pics) {
         Document document = null;
@@ -168,11 +165,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected ArrayList<String> makeFileNames(File dir, List<String> urls) {
         ArrayList<String> out = new ArrayList<>();
 
-        for (int i = 0; i < urls.size(); i++) {
+        for (int i = 0; i < urls.size(); i++)
             out.add(new File(dir + "/" + new File(urls.get(i)).getName()).toString());
-            System.out.println(out.get(i));
-        }
-
 
         return out;
     }
@@ -180,49 +174,62 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            new Thread(new Runnable() {     // seems like received intents are not evaluated in order.
-                @Override                   // immediately usher evaluation to be done on indiv bkgd threads
-                public void run() {
-                    String downloadThread_name_return = intent.getStringExtra("downloadThread_name_return");
-//                    System.out.println(downloadThread_name_return + ", " + downloadThread_name);
-//                    System.out.println(downloadThread_name_return.equals(downloadThread_name));
-
-                    String webpage_url_return = intent.getStringExtra("webpage_url_return");
-//                    System.out.println(webpage_url_return + ", " + webpage_url);
-//                    System.out.println(webpage_url_return.equals(webpage_url));
-
-                    String filename = intent.getStringExtra("filename");
-                    System.out.println(filename);
-
-                    System.out.println(pos);
-
-                    if (downloadThread_name_return.equals(downloadThread_name) & webpage_url_return.equals(webpage_url) & pos < max_pics & !filenames.contains(filename)) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                pos++;
-                                imageToImageView(filename, pos);
-                                updateProgressBar(pos, max_pics);
-                                filenames.add(filename);
-
-                                if (pos == max_pics-1){
-                                    stopService(new Intent(SelectPictures.this, DownloadService.class));
-                                    findViewById(R.id.progressBar).setVisibility(View.GONE);
-                                    findViewById(R.id.barText).setVisibility(View.GONE);
-                                    findViewById(R.id.instruction).setVisibility(View.VISIBLE);
-                                    running = false;    // computation done
-
-                                    waitForSelectedPics();
-                                }
-                            }
-                        });
-                    }
-
-                }
-            }).start();
-
+            // seems like received intents are not evaluated in order.
+            // immediately usher evaluation to be done on indiv bkgd threads
+            new Thread(new EvaluateIntent(intent)).start();
         }
     };
+
+    class EvaluateIntent implements Runnable {
+        Intent intent;
+
+        EvaluateIntent (Intent intent) {
+            this.intent = intent;
+        }
+
+        @Override
+        public void run() {
+            String search_session_id_return = intent.getStringExtra("search_session_id_return");
+            String filename = intent.getStringExtra("filename");
+
+            boolean cond1 = Integer.valueOf(search_session_id_return) == search_session_id;
+            boolean cond3 = pos < max_pics;
+            boolean cond4 = !filenames.contains(filename);
+            // boolean cond = cond1 & cond2 & cond3 & cond4;
+            boolean cond = cond1 & cond3 & cond4;
+
+            System.out.println(cond1 + ", " + cond3 + ", " + cond4);
+
+            if (cond)
+                runOnUiThread(new UpdateUI(filename));
+        }
+    }
+
+    class UpdateUI implements Runnable {
+        String filename;
+
+        UpdateUI (String filename) {
+            this.filename = filename;
+        }
+
+        @Override
+        public void run() {
+            pos++;
+            imageToImageView(filename, pos);
+            updateProgressBar(pos, max_pics);
+            filenames.add(filename);
+
+            if (pos == max_pics-1){
+                stopService(new Intent(SelectPictures.this, DownloadService.class));
+                findViewById(R.id.progressBar).setVisibility(View.GONE);
+                findViewById(R.id.barText).setVisibility(View.GONE);
+                findViewById(R.id.instruction).setVisibility(View.VISIBLE);
+                running = false;    // computation done
+
+                waitForSelectedPics();
+            }
+        }
+    }
 
 
     protected void imageToImageView(String filename, int pos) {
