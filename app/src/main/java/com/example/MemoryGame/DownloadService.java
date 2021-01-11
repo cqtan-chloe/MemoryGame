@@ -2,10 +2,13 @@ package com.example.MemoryGame;
 
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.widget.ImageView;
 import android.widget.ThemedSpinnerAdapter;
 import android.widget.Toast;
 
@@ -13,12 +16,14 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class DownloadService extends Service {
@@ -35,6 +40,7 @@ public class DownloadService extends Service {
             String search_session_id_return = intent.getStringExtra("search_session_id");
 
             downloadToSave(where, filename);
+            resizeImage(filename);
             Intent intent1 = new Intent();
             intent1.setAction("download_ok");
             intent1.putExtra("filename", filename);
@@ -66,6 +72,26 @@ public class DownloadService extends Service {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void resizeImage(String filename) {
+        Bitmap bitmap = BitmapFactory.decodeFile(filename);
+        if (bitmap != null) {
+            int[] arr = {bitmap.getWidth(), bitmap.getHeight()};
+            int dim = Arrays.stream(arr).filter((int x)->x != 0).min().getAsInt();
+            Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, dim, dim);
+
+            try {
+                File file = new File(filename);
+                FileOutputStream out = new FileOutputStream(file);
+
+                resized.compress(Bitmap.CompressFormat.JPEG, 85, out);
+                out.flush();
+                out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

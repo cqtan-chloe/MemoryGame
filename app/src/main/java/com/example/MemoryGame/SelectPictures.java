@@ -42,13 +42,15 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     Handler sel_picsHandler;
     protected int PIC_SELECTED = 1;
 
-    int nsel = 0;
+    int nsel;
     int max_sel = 6;
-    ArrayList<String> sel_pics = new ArrayList<>();
+    ArrayList<String> sel_pics;
 
     public void setInitialValue(){
         pos = -1;
+        nsel = 0;
         filenames = new ArrayList<>();
+        sel_pics = new ArrayList<>();
     }
 
     @Override
@@ -234,21 +236,17 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             int id = getResources().getIdentifier("imageView" + pos, "id", getPackageName());
             ImageView imgView = findViewById(id);
             imgView.setVisibility(View.VISIBLE);
-
-            int[] arr = {bitmap.getWidth(), bitmap.getHeight(), imgView.getWidth(), imgView.getHeight()};
-            int dim = Arrays.stream(arr).filter(x -> x > 0).min().getAsInt();
-            Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, dim, dim);
-            imgView.setImageBitmap(resized);
+            imgView.setImageBitmap(bitmap);
 
             imgView.setOnClickListener(view -> {
                 long min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
                 int index = (int) (view.getUniqueDrawingId() - min_ImageView_id);
 
-                    Message clicked = new Message();
-                    clicked.what = PIC_SELECTED;
-                    clicked.obj = index;
+                Message clicked = new Message();
+                clicked.what = PIC_SELECTED;
+                clicked.obj = index;
 
-                    sel_picsHandler.sendMessage(clicked);
+                sel_picsHandler.sendMessage(clicked);
             });
         }
     }

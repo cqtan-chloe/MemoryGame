@@ -36,31 +36,18 @@ public class PlayGame extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
         matchedIndex = new ArrayList<>();
+
         Intent intent = getIntent();
         sel_pics = intent.getStringArrayListExtra("sel_pics");
         N_pairs = sel_pics.size();
-        playMemoryGame(sel_pics);
+
         correct = MediaPlayer.create(this,R.raw.correct);
         wrong = MediaPlayer.create(this,R.raw.wrong);
         victory = MediaPlayer.create(this,R.raw.victory);
+
+        playMemoryGame(sel_pics);
     }
 
-    private void correct(){
-        correct.reset();
-        correct=MediaPlayer.create(PlayGame.this, R.raw.correct);
-        correct.start();
-    }
-
-    private void wrong(){
-        wrong.reset();
-        wrong=MediaPlayer.create(PlayGame.this, R.raw.wrong);
-        wrong.start();
-    }
-    private void victory(){
-        victory.reset();
-        victory=MediaPlayer.create(PlayGame.this, R.raw.victory);
-        victory.start();
-    }
     protected void playMemoryGame(ArrayList<String> sel_pics) {
         picseq = new ArrayList<>();
 
@@ -82,12 +69,12 @@ public class PlayGame extends AppCompatActivity {
             imgView.setOnClickListener(view -> {
                 int min_ImageView_id = (int) findViewById(R.id.imageView0).getUniqueDrawingId();
                 int curr_i = (int) view.getUniqueDrawingId() - min_ImageView_id;
-                if (evaluating == true || matchedIndex.contains(curr_i)){
+
+                if (evaluating == true || matchedIndex.contains(curr_i))
                     return;
-                }
-                if (curr_i != prev_i){
+
+                if (curr_i != prev_i)
                     reviewImage(curr_i);
-                }
             });
         };
     }
@@ -98,16 +85,13 @@ public class PlayGame extends AppCompatActivity {
             int id = getResources().getIdentifier("imageView" + curr_i,
                     "id", getPackageName());
             ImageView curr_imgView = findViewById(id);
-            int[] arr = {bitmap.getWidth(), bitmap.getHeight()};
-            int dim = Arrays.stream(arr).filter((int x)->x != 0).min().getAsInt();
-            Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, dim, dim);
-            curr_imgView.setImageBitmap(resized);
+            curr_imgView.setImageBitmap(bitmap);
+
             numberSelected += 1;
-            if (numberSelected % 2 == 0){
+            if (numberSelected == 2)
                 checkMatching(curr_i, curr_imgView);
-            }else{
+            else
                 prev_i = curr_i;
-            }
         }
     }
 
@@ -129,7 +113,7 @@ public class PlayGame extends AppCompatActivity {
                     matchedIndex.add(prev_i);
                     if(pair_counter==sel_pics.size()){
 
-                        victory();
+                        victory.start();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -142,12 +126,12 @@ public class PlayGame extends AppCompatActivity {
                         });
                     }else{
 
-                        correct();
+                        correct.start();
                     }
                 }else{
                     ImageView prev_imgView = findViewById(getResources().getIdentifier("imageView" + prev_i,
                             "id", getPackageName()));
-                    wrong();
+                    wrong.start();
                     numberSelected -= 2;
                     runOnUiThread(new Runnable() {
                         @Override
