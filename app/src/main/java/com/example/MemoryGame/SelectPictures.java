@@ -26,7 +26,9 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -45,6 +47,9 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     HandlerThread MainUI_ht;
     Handler sel_picsHandler;
     protected int PIC_SELECTED = 1;
+
+    private long downloadThread_id;
+    private String downloadThread_name;
 
     public void setInitialValue(){
         pos = -1;
@@ -88,6 +93,9 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
     public void startDownloading(String webpage_url){
         downloadThread = new Thread(new Runnable() {
+
+            long downloadThread_id = Thread.currentThread().getId(); // internal copy of thread id
+
             @Override
             public void run() {
                 ArrayList<String> urls = getUrls(webpage_url, max_pics);
@@ -96,16 +104,28 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                     File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                     ArrayList<String> filenames = makeFileNames(dir, urls);
 
-                    Intent intent = new Intent(SelectPictures.this, DownloadService.class);
-                    intent.setAction("download");
-                    intent.putStringArrayListExtra("filenames", filenames);
-                    intent.putStringArrayListExtra("where", urls);
-                    startService(intent);
+                    for (int i = 0; i < filenames.size(); i++) {
+                        Intent intent = new Intent(SelectPictures.this, DownloadService.class);
+                        intent.setAction("download");
+                        intent.putExtra("filename", filenames.get(i));
+                        intent.putExtra("where", urls.get(i));
+                        //intent.putExtra("downloadThread_id", Long.toString(downloadThread_id));
+                        intent.putExtra("downloadThread_name", downloadThread_name);
+                        startService(intent);
+
+                        try {
+                            TimeUnit.SECONDS.sleep(3);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         });
 
         downloadThread.start();
+
+        downloadThread_name = downloadThread.getName(); // get another copy of thread id
     }
 
     protected ArrayList<String> getUrls(String webpage_url, int max_pics) {
@@ -147,10 +167,18 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            
             String action = intent.getAction();
-            if (action.equals("download_ok")) {
+            //long downloadThread_id_return = Long.valueOf(intent.getStringExtra("downloadThread_id_return"));
+            String downloadThread_name_return = intent.getStringExtra("downloadThread_name_return");
+            //System.out.println(downloadThread_id_return + ", " + downloadThread_id);
+            //System.out.println(downloadThread_id_return == downloadThread_id);
+            System.out.println(downloadThread_name_return + ", " + downloadThread_name);
+            System.out.println(downloadThread_name_return.equals(downloadThread_name));
+            if (action.equals("download_ok") & downloadThread_name_return.equals(downloadThread_name)) {
                 pos++;
                 String filename = intent.getStringExtra("filename");
+                System.out.println(filename);
                 imageToImageView(filename, pos);
                 updateProgressBar(pos, max_pics);
                 filenames.add(filename);

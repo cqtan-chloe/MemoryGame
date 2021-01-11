@@ -6,6 +6,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.widget.ThemedSpinnerAdapter;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -25,24 +26,23 @@ public class DownloadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+
         String action = intent.getAction();
-        if (action.compareToIgnoreCase("download") == 0) {
-            ArrayList<String> where = intent.getStringArrayListExtra("where");
-            ArrayList<String> filenames = intent.getStringArrayListExtra("filenames");
-            for (int i = 0; i < filenames.size(); i++) {
+        if (action.compareToIgnoreCase("download") == 0)
+        {
+            String where = intent.getStringExtra("where");
+            String filename = intent.getStringExtra("filename");
+            //String downloadThread_id_return = intent.getStringExtra("downloadThread_id");;
+            String downloadThread_name_return = intent.getStringExtra("downloadThread_name");;
 
-                downloadToSave(where.get(i), filenames.get(i));
-                Intent intent1 = new Intent();
-                intent1.setAction("download_ok");
-                intent1.putExtra("filename", filenames.get(i));
-                sendBroadcast(intent1);
+            downloadToSave(where, filename);
+            Intent intent1 = new Intent();
+            intent1.setAction("download_ok");
+            intent1.putExtra("filename", filename);
+            //intent1.putExtra("downloadThread_id_return", downloadThread_id_return);
+            intent1.putExtra("downloadThread_name_return", downloadThread_name_return);
+            sendBroadcast(intent1);
 
-                try {
-                    TimeUnit.SECONDS.sleep(3);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
         }
 
         // don't restart this task if killed by Android system
