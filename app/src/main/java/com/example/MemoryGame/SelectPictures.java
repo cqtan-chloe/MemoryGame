@@ -48,7 +48,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     Handler sel_picsHandler;
     protected int PIC_SELECTED = 1;
 
-    private long downloadThread_id;
     private String downloadThread_name;
 
     String webpage_url;
@@ -64,14 +63,12 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         setInitialValue();
         findViewById(R.id.fetch).setOnClickListener(this);
 
-        findViewById(R.id.instruction).setVisibility(View.VISIBLE);
-
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
-        filter.addAction("pic_selected");
         registerReceiver(receiver, filter);
     }
 
@@ -80,14 +77,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         if (running) {    // if the download process is already running
             stopService(new Intent(SelectPictures.this, DownloadService.class));
             downloadThread.interrupt();
-
-            for (int i = 0; i <= pos; i++){
-                int id = getResources().getIdentifier("imageView" + i, "id", getPackageName());
-                ImageView imgView = findViewById(id);
-                imgView.setVisibility(View.GONE);
-            }
-
             running = false;
+            resetUI();
         }
 
         EditText URLInput = findViewById(R.id.webpage_url);
@@ -97,6 +88,14 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             running = true;
             setInitialValue();
             startDownloading(webpage_url);
+        }
+    }
+
+    protected void resetUI() {
+        for (int i = 0; i <= pos; i++){
+            int id = getResources().getIdentifier("imageView" + i, "id", getPackageName());
+            ImageView imgView = findViewById(id);
+            imgView.setVisibility(View.GONE);
         }
     }
 
@@ -115,26 +114,26 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
                     for (int i = 0; i < filenames.size(); i++) {
 
-                        if (Thread.interrupted())
+                        if (Thread.interrupted() | pos == max_pics - 1)
                             return;
 
                         Intent intent = new Intent(SelectPictures.this, DownloadService.class);
                         intent.setAction("download");
                         intent.putExtra("filename", filenames.get(i));
                         intent.putExtra("where", urls.get(i));
-                        //intent.putExtra("downloadThread_id", Long.toString(downloadThread_id));
                         intent.putExtra("downloadThread_name", downloadThread_name);
                         intent.putExtra("webpage_url", webpage_url);
                         startService(intent);
 
                         try {
-                            TimeUnit.SECONDS.sleep(3);
+                            TimeUnit.SECONDS.sleep(1);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
                 }
             }
+
         });
 
         downloadThread.start();
@@ -184,43 +183,44 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             new Thread(new Runnable() {     // seems like received intents are not evaluated in order.
                 @Override                   // immediately usher evaluation to be done on indiv bkgd threads
                 public void run() {
-                    String action = intent.getAction();
-                    //long downloadThread_id_return = Long.valueOf(intent.getStringExtra("downloadThread_id_return"));
                     String downloadThread_name_return = intent.getStringExtra("downloadThread_name_return");
-                    //System.out.println(downloadThread_id_return + ", " + downloadThread_id);
-                    //System.out.println(downloadThread_id_return == downloadThread_id);
-                    System.out.println(downloadThread_name_return + ", " + downloadThread_name);
-                    System.out.println(downloadThread_name_return.equals(downloadThread_name));
+//                    System.out.println(downloadThread_name_return + ", " + downloadThread_name);
+//                    System.out.println(downloadThread_name_return.equals(downloadThread_name));
 
                     String webpage_url_return = intent.getStringExtra("webpage_url_return");
-                    System.out.println(webpage_url_return + ", " + webpage_url);
-                    System.out.println(webpage_url_return.equals(webpage_url));
+//                    System.out.println(webpage_url_return + ", " + webpage_url);
+//                    System.out.println(webpage_url_return.equals(webpage_url));
 
-                    if (action.equals("download_ok") & downloadThread_name_return.equals(downloadThread_name) & webpage_url_return.equals(webpage_url)) {
+                    String filename = intent.getStringExtra("filename");
+                    System.out.println(filename);
+
+                    System.out.println(pos);
+
+                    if (downloadThread_name_return.equals(downloadThread_name) & webpage_url_return.equals(webpage_url) & pos < max_pics & !filenames.contains(filename)) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 pos++;
-                                String filename = intent.getStringExtra("filename");
-                                System.out.println(filename);
                                 imageToImageView(filename, pos);
                                 updateProgressBar(pos, max_pics);
                                 filenames.add(filename);
+
+                                if (pos == max_pics-1){
+                                    stopService(new Intent(SelectPictures.this, DownloadService.class));
+                                    findViewById(R.id.progressBar).setVisibility(View.GONE);
+                                    findViewById(R.id.barText).setVisibility(View.GONE);
+                                    findViewById(R.id.instruction).setVisibility(View.VISIBLE);
+                                    running = false;    // computation done
+
+                                    waitForSelectedPics();
+                                }
                             }
                         });
                     }
+
                 }
             }).start();
 
-            if (pos == max_pics-1){
-                stopService(new Intent(SelectPictures.this, DownloadService.class));
-                findViewById(R.id.progressBar).setVisibility(View.GONE);
-                findViewById(R.id.barText).setVisibility(View.GONE);
-                findViewById(R.id.instruction).setVisibility(View.VISIBLE);
-                running = false;    // computation done
-
-                waitForSelectedPics();
-            }
         }
     };
 
@@ -228,7 +228,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected void imageToImageView(String filename, int pos) {
         Bitmap bitmap = BitmapFactory.decodeFile(filename);
 
-        if (bitmap != null) {
+        if (bitmap != null & pos < max_pics) {
             int id = getResources().getIdentifier("imageView" + pos, "id", getPackageName());
             ImageView imgView = findViewById(id);
             imgView.setVisibility(View.VISIBLE);
