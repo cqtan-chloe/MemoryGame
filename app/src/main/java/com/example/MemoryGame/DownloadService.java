@@ -33,7 +33,8 @@ public class DownloadService extends Service {
             String where = intent.getStringExtra("where");
             String filename = intent.getStringExtra("filename");
             //String downloadThread_id_return = intent.getStringExtra("downloadThread_id");;
-            String downloadThread_name_return = intent.getStringExtra("downloadThread_name");;
+            String downloadThread_name_return = intent.getStringExtra("downloadThread_name");
+            String webpage_url_return = intent.getStringExtra("webpage_url");
 
             downloadToSave(where, filename);
             Intent intent1 = new Intent();
@@ -41,6 +42,7 @@ public class DownloadService extends Service {
             intent1.putExtra("filename", filename);
             //intent1.putExtra("downloadThread_id_return", downloadThread_id_return);
             intent1.putExtra("downloadThread_name_return", downloadThread_name_return);
+            intent1.putExtra("webpage_url_return", webpage_url_return);
             sendBroadcast(intent1);
 
         }
