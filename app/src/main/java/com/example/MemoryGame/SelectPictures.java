@@ -46,6 +46,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     int max_sel = 6;
     ArrayList<String> sel_pics;
 
+    long min_ImageView_id;
+
     public void setInitialValue(){
         pos = -1;
         nsel = 0;
@@ -60,6 +62,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
         setInitialValue();
         findViewById(R.id.fetch).setOnClickListener(this);
+        min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
@@ -84,7 +87,12 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             setInitialValue();
 
             search_session_id++;
-            new Thread(new StartDownloading(webpage_url, search_session_id)).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    StartDownloading(webpage_url, search_session_id);
+                }
+            }).start();
             waitForSelectedPics();
         }
     }
@@ -97,40 +105,29 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    class StartDownloading implements Runnable {
-        String webpage_url;
-        int search_session_id;
+    protected void StartDownloading(String webpage_url, int search_session_id){
+        ArrayList<String> urls = getUrls(webpage_url, max_pics);
+        if (urls != null & urls.size() > 0) {   //invalid website
 
-        StartDownloading (String webpage_url, int search_session_id) {
-            this.webpage_url = webpage_url;
-            this.search_session_id = search_session_id;
-        }
+            File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            ArrayList<String> filenames = makeFileNames(dir, urls);
 
-        @Override
-        public void run() {
-            ArrayList<String> urls = getUrls(webpage_url, max_pics);
-            if (urls != null & urls.size() > 0) {   //invalid website
+            for (int i = 0; i < filenames.size(); i++) {
 
-                File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                ArrayList<String> filenames = makeFileNames(dir, urls);
+                if (pos == max_pics - 1)
+                    return;
 
-                for (int i = 0; i < filenames.size(); i++) {
+                Intent intent = new Intent(SelectPictures.this, DownloadService.class);
+                intent.setAction("download");
+                intent.putExtra("filename", filenames.get(i));
+                intent.putExtra("where", urls.get(i));
+                intent.putExtra("search_session_id", Integer.toString(search_session_id));
+                startService(intent);
 
-                    if (pos == max_pics - 1)
-                        return;
-
-                    Intent intent = new Intent(SelectPictures.this, DownloadService.class);
-                    intent.setAction("download");
-                    intent.putExtra("filename", filenames.get(i));
-                    intent.putExtra("where", urls.get(i));
-                    intent.putExtra("search_session_id", Integer.toString(search_session_id));
-                    startService(intent);
-
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -175,56 +172,44 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         public void onReceive(Context context, Intent intent) {
             // seems like received intents are not evaluated in order.
             // immediately usher evaluation to be done on indiv bkgd threads
-            new Thread(new EvaluateIntent(intent)).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    EvaluateIntent(intent);
+                }
+            }).start();
         }
     };
 
-    class EvaluateIntent implements Runnable {
-        Intent intent;
+    protected void EvaluateIntent(Intent intent) {
+        String search_session_id_return = intent.getStringExtra("search_session_id_return");
+        String filename = intent.getStringExtra("filename");
 
-        EvaluateIntent (Intent intent) {
-            this.intent = intent;
-        }
+        boolean cond1 = Integer.valueOf(search_session_id_return) == search_session_id;
+        boolean cond2 = pos < max_pics;
+        boolean cond3 = !filenames.contains(filename);
 
-        @Override
-        public void run() {
-            String search_session_id_return = intent.getStringExtra("search_session_id_return");
-            String filename = intent.getStringExtra("filename");
-
-            boolean cond1 = Integer.valueOf(search_session_id_return) == search_session_id;
-            boolean cond3 = pos < max_pics;
-            boolean cond4 = !filenames.contains(filename);
-            // boolean cond = cond1 & cond2 & cond3 & cond4;
-            boolean cond = cond1 & cond3 & cond4;
-
-            System.out.println(cond1 + ", " + cond3 + ", " + cond4);
-
-            if (cond)
-                runOnUiThread(new UpdateUI(filename));
-        }
+        if (cond1 & cond2 & cond3)
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    UpdateUI(filename);
+                }
+            });
     }
 
-    class UpdateUI implements Runnable {
-        String filename;
+    protected void UpdateUI(String filename) {
+        pos++;
+        imageToImageView(filename, pos);
+        updateProgressBar(pos, max_pics);
+        filenames.add(filename);
 
-        UpdateUI (String filename) {
-            this.filename = filename;
-        }
-
-        @Override
-        public void run() {
-            pos++;
-            imageToImageView(filename, pos);
-            updateProgressBar(pos, max_pics);
-            filenames.add(filename);
-
-            if (pos == max_pics-1){
-                stopService(new Intent(SelectPictures.this, DownloadService.class));
-                findViewById(R.id.progressBar).setVisibility(View.GONE);
-                findViewById(R.id.barText).setVisibility(View.GONE);
-                findViewById(R.id.instruction).setVisibility(View.VISIBLE);
-                running = false;    // computation done
-            }
+        if (pos == max_pics-1){
+            stopService(new Intent(SelectPictures.this, DownloadService.class));
+            findViewById(R.id.progressBar).setVisibility(View.GONE);
+            findViewById(R.id.barText).setVisibility(View.GONE);
+            findViewById(R.id.instruction).setVisibility(View.VISIBLE);
+            running = false;    // computation done
         }
     }
 
@@ -239,7 +224,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             imgView.setImageBitmap(bitmap);
 
             imgView.setOnClickListener(view -> {
-                long min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
                 int index = (int) (view.getUniqueDrawingId() - min_ImageView_id);
 
                 Message clicked = new Message();
