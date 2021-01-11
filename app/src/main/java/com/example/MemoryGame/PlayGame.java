@@ -26,24 +26,35 @@ public class PlayGame extends AppCompatActivity {
     ArrayList<Integer> matchedIndex = new ArrayList<>();
     CountDownTimer2 timer;
 
+    Drawable default_image;
+    int min_ImageView_id;
+    TextView matchCounter;
+    TextView timer_box;
+
+    protected void getUIInfo() {
+        default_image = getDrawable(R.drawable.question);
+        min_ImageView_id = (int) findViewById(R.id.imageView0).getUniqueDrawingId();
+        matchCounter = findViewById(R.id.matchCounter);
+        timer_box = findViewById(R.id.timer);
+    }
+
     MediaPlayer correct;
     MediaPlayer wrong;
     MediaPlayer victory;
 
-    Drawable default_image;
-    int min_ImageView_id;
+    protected void setUIInfo() {
+        correct = MediaPlayer.create(this,R.raw.correct);
+        wrong = MediaPlayer.create(this,R.raw.wrong);
+        victory = MediaPlayer.create(this,R.raw.victory);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
 
-        default_image = getDrawable(R.drawable.question);
-        min_ImageView_id = (int) findViewById(R.id.imageView0).getUniqueDrawingId();
-        correct = MediaPlayer.create(this,R.raw.correct);
-        wrong = MediaPlayer.create(this,R.raw.wrong);
-        victory = MediaPlayer.create(this,R.raw.victory);
-
+        getUIInfo();
+        setUIInfo();
 
         sel_pics = getIntent().getStringArrayListExtra("sel_pics");
         N_pairs = sel_pics.size();
@@ -57,10 +68,7 @@ public class PlayGame extends AppCompatActivity {
 
         Collections.shuffle(picseq);
 
-        long totalSeconds = 359999;     // 99*60*60 + 59*60 + 59 = 359,999. max N seconds.
-        long intervalSeconds = 1;
-        TextView timer_box = findViewById(R.id.timer);
-        timer = new CountDownTimer2(totalSeconds * 1000, intervalSeconds * 1000, timer_box);
+        timer = makeCountUpTimer(timer_box);
         timer.start();
 
         updateMatchCounter(pair_counter, N_pairs);
@@ -73,15 +81,14 @@ public class PlayGame extends AppCompatActivity {
         Bitmap bitmap = BitmapFactory.decodeFile(filename);
 
         if (bitmap != null) {
-            int id = getResources().getIdentifier("imageView" + pos, "id", getPackageName());
-            ImageView imgView = findViewById(id);
+            ImageView imgView = findImageViewByName("imageView" + pos);
             imgView.setImageBitmap(bitmap);
             imgView.setForeground(default_image);
 
             imgView.setOnClickListener(view -> {
                 int curr_i = (int) (view.getUniqueDrawingId() - min_ImageView_id);
 
-                if (evaluating == true || matchedIndex.contains(curr_i))
+                if (evaluating || matchedIndex.contains(curr_i))
                     return;
 
                 if (curr_i != prev_i)
@@ -91,68 +98,46 @@ public class PlayGame extends AppCompatActivity {
     }
 
     public void revealImage(int curr_i) {
-        int id = getResources().getIdentifier("imageView" + curr_i, "id", getPackageName());
-        ImageView curr_imgView = findViewById(id);
+        ImageView curr_imgView = findImageViewByName("imageView" + curr_i);
         curr_imgView.setForeground(null);
 
         if (prev_i == -1)   // no unmatched pictures revealed
             prev_i = curr_i;
         else
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    checkMatching(curr_i);
-                }
-            }).start();
+            new Thread(() -> checkMatching(curr_i)).start();
     }
 
     public void checkMatching(int curr_i) {
         evaluating = true;
 
-        if (picseq.get(curr_i) == picseq.get(prev_i)){
+        if (picseq.get(curr_i).equals(picseq.get(prev_i))){
             correct.start();
             pair_counter+=1;
             updateMatchCounter(pair_counter, N_pairs);
             matchedIndex.add(curr_i);
             matchedIndex.add(prev_i);
 
-            pause();
+            pause(1500);
 
             if(pair_counter==sel_pics.size()) {
                 victory.start();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        endGame();
-                    }
-                });
+                runOnUiThread(this::endGame);
             }
         }else{
             wrong.start();
-            ImageView prev_imgView = findViewById(getResources().getIdentifier("imageView" + prev_i, "id", getPackageName()));
-            ImageView curr_imgView = findViewById(getResources().getIdentifier("imageView" + curr_i, "id", getPackageName()));
+            ImageView prev_imgView = findImageViewByName("imageView" + prev_i);
+            ImageView curr_imgView = findImageViewByName("imageView" + curr_i);
 
-            pause();
+            pause(1500);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    curr_imgView.setForeground(default_image);
-                    prev_imgView.setForeground(default_image);
-                }
+            runOnUiThread(() -> {
+                curr_imgView.setForeground(default_image);
+                prev_imgView.setForeground(default_image);
             });
         }
 
         prev_i = -1;    // reset
         evaluating = false;
-    }
-
-    protected void pause() {
-        try {
-            TimeUnit.MILLISECONDS.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     protected void endGame() {
@@ -163,9 +148,32 @@ public class PlayGame extends AppCompatActivity {
         startActivity(result);
     }
 
-    protected void updateMatchCounter(int pair_counter, int N_pairs) {
-        TextView matchCounter = findViewById(R.id.matchCounter);
+    protected void updateMatchCounter(int pair_counter, int n_pairs) {
+        matchCounter.setText(pair_counter + " / " + n_pairs + " matches");
+    }
 
-        matchCounter.setText(pair_counter + " / " + N_pairs + " matches");
+
+    /* library of custom methods */
+    protected ImageView findImageViewByName(String name) {
+        int id = getResources().getIdentifier(name, "id", getPackageName());
+        ImageView imgView = findViewById(id);
+
+        return imgView;
+    }
+
+    protected CountDownTimer2 makeCountUpTimer(TextView timer_box) {
+        long totalSeconds = 359999;     // 99*60*60 + 59*60 + 59 = 359,999. max N seconds.
+        long intervalSeconds = 1;
+        CountDownTimer2 out = new CountDownTimer2(totalSeconds * 1000, intervalSeconds * 1000, timer_box);
+
+        return out;
+    }
+
+    protected void pause(int n_milliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(n_milliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

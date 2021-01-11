@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -22,7 +23,6 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +34,7 @@ import org.jsoup.select.Elements;
 public class SelectPictures extends AppCompatActivity implements View.OnClickListener {
 
     int max_pics = 20;
+    private int search_session_id = 0;
     private boolean running = false;
     int pos;
     ArrayList<String> filenames;
@@ -46,13 +47,27 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     int max_sel = 6;
     ArrayList<String> sel_pics;
 
+    Button fetch;
     long min_ImageView_id;
+    ProgressBar bar;
+    TextView progressBarStatus;
+    EditText URLInput;
+    TextView instruction;
 
-    public void setInitialValue(){
+    protected void setInitialValue() {
         pos = -1;
         nsel = 0;
         filenames = new ArrayList<>();
         sel_pics = new ArrayList<>();
+    }
+
+    protected void getUIInfo() {
+        fetch = findViewById(R.id.fetch);
+        min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
+        bar = findViewById(R.id.progressBar);
+        progressBarStatus = findViewById(R.id.barText);
+        URLInput = findViewById(R.id.webpage_url);
+        instruction = findViewById(R.id.instruction);
     }
 
     @Override
@@ -61,30 +76,30 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_main);
 
         setInitialValue();
-        findViewById(R.id.fetch).setOnClickListener(this);
-        min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
+        getUIInfo();
+        fetch.setOnClickListener(this);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
         registerReceiver(receiver, filter);
     }
 
-    private int search_session_id = 0;
-
     @Override
     public void onClick(View v) {
         if (running) {    // if the download process is already running
-            stopService(new Intent(SelectPictures.this, DownloadService.class));
+            stopService(new Intent(this, DownloadService.class));
             running = false;
             resetUI();
         }
 
-        EditText URLInput = findViewById(R.id.webpage_url);
         String webpage_url = URLInput.getText().toString();
 
         if (!webpage_url.equals("")) {    //prevent empty strings
             running = true;
             setInitialValue();
+
+            bar.setVisibility(View.VISIBLE);
+            progressBarStatus.setVisibility(View.VISIBLE);
 
             search_session_id++;
             new Thread(new Runnable() {
@@ -99,8 +114,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
     protected void resetUI() {
         for (int i = 0; i <= pos; i++){
-            int id = getResources().getIdentifier("imageView" + i, "id", getPackageName());
-            ImageView imgView = findViewById(id);
+            ImageView imgView = findImageViewByName("imageView" + i);
             imgView.setVisibility(View.GONE);
         }
     }
@@ -124,11 +138,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 intent.putExtra("search_session_id", Integer.toString(search_session_id));
                 startService(intent);
 
-                try {
-                    TimeUnit.MILLISECONDS.sleep(300);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                pause(300);
             }
         }
     }
@@ -153,7 +163,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         if (urls.size() > max_pics)
             urls = urls.subList(0, max_pics);
 
-        ArrayList<String> out = new ArrayList<String>(urls);
+        ArrayList<String> out = new ArrayList<>(urls);
 
         return out;
     }
@@ -172,12 +182,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         public void onReceive(Context context, Intent intent) {
             // seems like received intents are not evaluated in order.
             // immediately usher evaluation to be done on indiv bkgd threads
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    EvaluateIntent(intent);
-                }
-            }).start();
+            new Thread(() -> EvaluateIntent(intent)).start();
         }
     };
 
@@ -185,17 +190,12 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         String search_session_id_return = intent.getStringExtra("search_session_id_return");
         String filename = intent.getStringExtra("filename");
 
-        boolean cond1 = Integer.valueOf(search_session_id_return) == search_session_id;
+        boolean cond1 = Integer.parseInt(search_session_id_return) == search_session_id;
         boolean cond2 = pos < max_pics;
         boolean cond3 = !filenames.contains(filename);
 
         if (cond1 & cond2 & cond3)
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    UpdateUI(filename);
-                }
-            });
+            runOnUiThread(() -> UpdateUI(filename));
     }
 
     protected void UpdateUI(String filename) {
@@ -204,11 +204,11 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         updateProgressBar(pos, max_pics);
         filenames.add(filename);
 
-        if (pos == max_pics-1){
+        if (pos == max_pics-1) {
             stopService(new Intent(SelectPictures.this, DownloadService.class));
-            findViewById(R.id.progressBar).setVisibility(View.GONE);
-            findViewById(R.id.barText).setVisibility(View.GONE);
-            findViewById(R.id.instruction).setVisibility(View.VISIBLE);
+            bar.setVisibility(View.GONE);
+            progressBarStatus.setVisibility(View.GONE);
+            instruction.setVisibility(View.VISIBLE);
             running = false;    // computation done
         }
     }
@@ -218,8 +218,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         Bitmap bitmap = BitmapFactory.decodeFile(filename);
 
         if (bitmap != null) {
-            int id = getResources().getIdentifier("imageView" + pos, "id", getPackageName());
-            ImageView imgView = findViewById(id);
+            ImageView imgView = findImageViewByName("imageView" + pos);
             imgView.setVisibility(View.VISIBLE);
             imgView.setImageBitmap(bitmap);
 
@@ -236,14 +235,10 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     }
 
     protected void updateProgressBar(int pos, int max_pics) {
-        ProgressBar bar = findViewById(R.id.progressBar);
-        TextView progressBarStatus = findViewById(R.id.barText);
-        bar.setVisibility(View.VISIBLE);
         bar.setProgress(0);
         bar.setMax(max_pics);
         bar.setProgress(pos + 1);
-        progressBarStatus.setText("Downloading "+ (pos + 1 ) + " of " + bar.getMax()+ " images");
-        progressBarStatus.setVisibility(View.VISIBLE);
+        progressBarStatus.setText("Downloading "+ (pos + 1 ) + " of " + max_pics + " images");
     }
 
     protected void waitForSelectedPics() {
@@ -252,10 +247,9 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
         sel_picsHandler = new Handler(MainUI_ht.getLooper()) {
             public void handleMessage(@NonNull Message msg) {
-                if (msg.what == PIC_SELECTED & pos == max_pics - 1) { // selection of pictures start only after all pics are donwloaded
+                if (msg.what == PIC_SELECTED & pos == max_pics - 1) { // selection of pictures start only after all pics are downloaded
                     int index = (int) msg.obj;
-                    int id = getResources().getIdentifier("imageView" + index, "id", getPackageName());
-                    ImageView imgView = findViewById(id);
+                    ImageView imgView = findImageViewByName("imageView" + index);
 
                     if (!sel_pics.contains(filenames.get(index))) {
                         sel_pics.add(filenames.get(index));
@@ -289,4 +283,19 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         unregisterReceiver(receiver);
     }
 
+    /* library of custom methods */
+    protected ImageView findImageViewByName(String name) {
+        int id = getResources().getIdentifier(name, "id", getPackageName());
+        ImageView imgView = findViewById(id);
+
+        return imgView;
+    }
+
+    protected void pause(int n_milliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(n_milliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
