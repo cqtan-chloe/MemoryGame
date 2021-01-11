@@ -3,7 +3,6 @@ package com.example.MemoryGame;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -21,14 +19,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
@@ -39,19 +34,20 @@ import org.jsoup.select.Elements;
 public class SelectPictures extends AppCompatActivity implements View.OnClickListener {
 
     int max_pics = 20;
-    int max_sel = 6;
     private boolean running = false;
-    int pos, nsel;
-    ArrayList<String> sel_pics, filenames;
+    int pos;
+    ArrayList<String> filenames;
 
     HandlerThread MainUI_ht;
     Handler sel_picsHandler;
     protected int PIC_SELECTED = 1;
 
+    int nsel = 0;
+    int max_sel = 6;
+    ArrayList<String> sel_pics = new ArrayList<>();
+
     public void setInitialValue(){
         pos = -1;
-        nsel = 0;
-        sel_pics = new ArrayList<>();
         filenames = new ArrayList<>();
     }
 
@@ -87,6 +83,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
             search_session_id++;
             new Thread(new StartDownloading(webpage_url, search_session_id)).start();
+            waitForSelectedPics();
         }
     }
 
@@ -225,8 +222,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 findViewById(R.id.barText).setVisibility(View.GONE);
                 findViewById(R.id.instruction).setVisibility(View.VISIBLE);
                 running = false;    // computation done
-
-                waitForSelectedPics();
             }
         }
     }
@@ -235,7 +230,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected void imageToImageView(String filename, int pos) {
         Bitmap bitmap = BitmapFactory.decodeFile(filename);
 
-        if (bitmap != null & pos < max_pics) {
+        if (bitmap != null) {
             int id = getResources().getIdentifier("imageView" + pos, "id", getPackageName());
             ImageView imgView = findViewById(id);
             imgView.setVisibility(View.VISIBLE);
@@ -249,11 +244,11 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 long min_ImageView_id = findViewById(R.id.imageView0).getUniqueDrawingId();
                 int index = (int) (view.getUniqueDrawingId() - min_ImageView_id);
 
-                Message clicked = new Message();
-                clicked.what = PIC_SELECTED;
-                clicked.obj = index;
+                    Message clicked = new Message();
+                    clicked.what = PIC_SELECTED;
+                    clicked.obj = index;
 
-                sel_picsHandler.sendMessage(clicked);
+                    sel_picsHandler.sendMessage(clicked);
             });
         }
     }
