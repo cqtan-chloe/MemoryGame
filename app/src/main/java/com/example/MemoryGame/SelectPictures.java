@@ -131,7 +131,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 if (pos == max_pics - 1)
                     return;
 
-                Intent intent = new Intent(SelectPictures.this, DownloadService.class);
+                Intent intent = new Intent(this, DownloadService.class);
                 intent.setAction("download");
                 intent.putExtra("filename", filenames.get(i));
                 intent.putExtra("where", urls.get(i));
@@ -205,7 +205,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         filenames.add(filename);
 
         if (pos == max_pics-1) {
-            stopService(new Intent(SelectPictures.this, DownloadService.class));
+            stopService(new Intent(this, DownloadService.class));
             bar.setVisibility(View.GONE);
             progressBarStatus.setVisibility(View.GONE);
             instruction.setVisibility(View.VISIBLE);

@@ -142,7 +142,7 @@ public class PlayGame extends AppCompatActivity {
 
     protected void endGame() {
         timer.stop();
-        Intent result = new Intent(PlayGame.this, SelectPictures.class);
+        Intent result = new Intent(PlayGame.this, ResultActivity.class);
         result.putExtra("time", timer.getCountUpTime());
         finish();
         startActivity(result);
