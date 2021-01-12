@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,7 +34,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class SelectPictures extends AppCompatActivity implements View.OnClickListener {
+public class SelectPictures extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     int max_pics = 20;
     private int search_session_id = 0;
@@ -88,13 +89,24 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         fetch.setOnClickListener(this);
         go.setOnClickListener(this);
 
-        Spinner dropdown = findViewById(R.id.spinner);
+        Spinner spinner = findViewById(R.id.spinner);
         ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, NCOPIES);
-        dropdown.setAdapter(adapter);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
         registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+        ncopies = NCOPIES[position];
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 
     @Override
