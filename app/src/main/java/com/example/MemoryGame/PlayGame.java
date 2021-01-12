@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-public class PlayGame extends AppCompatActivity {
+public class PlayGame extends AppCompatActivity implements View.OnClickListener {
 
     int N_pairs;
     int prev_i = -1;
@@ -30,31 +32,39 @@ public class PlayGame extends AppCompatActivity {
     int min_ImageView_id;
     TextView matchCounter;
     TextView timer_box;
+    Button quit;
 
     protected void getUIInfo() {
         default_image = getDrawable(R.drawable.question);
         min_ImageView_id = (int) findViewById(R.id.imageView0).getUniqueDrawingId();
         matchCounter = findViewById(R.id.matchCounter);
         timer_box = findViewById(R.id.timer);
+        quit = findViewById(R.id.quit);
     }
 
     MediaPlayer correct;
-    MediaPlayer wrong;
     MediaPlayer victory;
 
     protected void setUIInfo() {
         correct = MediaPlayer.create(this,R.raw.correct);
-        wrong = MediaPlayer.create(this,R.raw.wrong);
         victory = MediaPlayer.create(this,R.raw.victory);
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(this, SelectPictures.class);
+        finish();
+        startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_second);
+        setContentView(R.layout.activity_playgame);
 
         getUIInfo();
         setUIInfo();
+        quit.setOnClickListener(this);
 
         sel_pics = getIntent().getStringArrayListExtra("sel_pics");
         N_pairs = sel_pics.size();
@@ -121,10 +131,10 @@ public class PlayGame extends AppCompatActivity {
 
             if(pair_counter==sel_pics.size()) {
                 victory.start();
+                pause(1000);
                 runOnUiThread(this::endGame);
             }
         }else{
-            wrong.start();
             ImageView prev_imgView = findImageViewByName("imageView" + prev_i);
             ImageView curr_imgView = findImageViewByName("imageView" + curr_i);
 
@@ -142,7 +152,7 @@ public class PlayGame extends AppCompatActivity {
 
     protected void endGame() {
         timer.stop();
-        Intent result = new Intent(PlayGame.this, ResultActivity.class);
+        Intent result = new Intent(this, ResultActivity.class);
         result.putExtra("time", timer.getCountUpTime());
         finish();
         startActivity(result);

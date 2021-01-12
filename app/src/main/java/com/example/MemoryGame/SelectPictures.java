@@ -35,6 +35,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
     int max_pics = 20;
     private int search_session_id = 0;
+    String webpage_url;
     private boolean running = false;
     int pos;
     ArrayList<String> filenames;
@@ -73,7 +74,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_selectpictures);
 
         setInitialValue();
         getUIInfo();
@@ -92,7 +93,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
             resetUI();
         }
 
-        String webpage_url = URLInput.getText().toString();
+        webpage_url = URLInput.getText().toString();
 
         if (!webpage_url.equals("")) {    //prevent empty strings
             running = true;
@@ -273,8 +274,27 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         Intent play_game = new Intent(this, PlayGame.class);
         play_game.putStringArrayListExtra("sel_pics", sel_pics);
         finish();
+
         startActivity(play_game);
     }
+
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//        super.onSaveInstanceState(savedInstanceState);
+//        // Save UI state changes to the savedInstanceState.
+//        // This bundle will be passed to onCreate if the process is
+//        // killed and restarted.
+//        savedInstanceState.putString("webpage_url", webpage_url);
+//    }
+//
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        // Restore UI state from the savedInstanceState.
+//        // This bundle has also been passed to onCreate.
+//        webpage_url = savedInstanceState.getString("webpage_url");
+//        URLInput.setText(webpage_url);
+//    }
 
     @Override
     public void onDestroy() {

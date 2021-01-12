@@ -29,8 +29,6 @@
         android:id="@+id/fetch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_row="0"
-        android:layout_column="2"
         android:layout_gravity="center"
         android:layout_marginLeft="48dp"
         android:layout_marginEnd="16dp"
@@ -294,7 +292,6 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:visibility="gone"
-
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
@@ -302,5 +299,6 @@
         app:layout_constraintTop_toBottomOf="@+id/gridLayout"
         app:layout_constraintVertical_bias="0.617"
         tools:visibility="visible" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout >
