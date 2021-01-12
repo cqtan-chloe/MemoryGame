@@ -1,4 +1,4 @@
-# Memory Game 
+# Memory Game (Adapted)
 
 ## About 
 A project adapted from a school project done with 7 other team members.  
