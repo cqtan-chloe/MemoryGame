@@ -45,7 +45,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected int PIC_SELECTED = 1;
 
     int nsel;
-    int max_sel = 12;    // number of pictures to select
+    int max_sel = 6;    // number of pictures to select
     int ncopies = 2;    // number of copies per picture
     ArrayList<String> sel_pics;
 

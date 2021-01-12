@@ -15,15 +15,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 public class PlayGame extends AppCompatActivity implements View.OnClickListener {
 
-    int N_pairs;
+    int N_sets;
     int ncells;
     int ncopies;
-    int prev_i = -1;
-    int pair_counter = 0;
+    ArrayList<Integer> opened_indexes;
+    int set_counter = 0;
     boolean evaluating = false;
     ArrayList<String> sel_pics;
     ArrayList<String> picseq = new ArrayList<>();
@@ -64,31 +65,31 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
         super.onCreate(savedInstanceState);
 
         sel_pics = getIntent().getStringArrayListExtra("sel_pics");
-        N_pairs = sel_pics.size();
+        N_sets = sel_pics.size();
         ncopies = getIntent().getIntExtra("ncopies", -1);
-        ncells = N_pairs * ncopies;
+        ncells = N_sets * ncopies;
 
         int id = getResources().getIdentifier("activity_playgame" + ncells, "layout", getPackageName());
         setContentView(id);
-        System.out.println(R.layout.activity_playgame16 + ", " + id);
 
         getUIInfo();
         setUIInfo();
         quit.setOnClickListener(this);
+        opened_indexes = new ArrayList<>();
 
         playMemoryGame(sel_pics);
     }
 
     protected void playMemoryGame(ArrayList<String> sel_pics) {
-        for (int i = 0; i < N_pairs * ncopies; i++)
-            picseq.add(sel_pics.get(i % N_pairs));
+        for (int i = 0; i < N_sets * ncopies; i++)
+            picseq.add(sel_pics.get(i % N_sets));
 
         Collections.shuffle(picseq);
 
         timer = makeCountUpTimer(timer_box);
         timer.start();
 
-        updateMatchCounter(pair_counter, N_pairs);
+        updateMatchCounter(set_counter, N_sets);
 
         for (int i = 0; i < picseq.size(); i++)
             imageToImageView(picseq.get(i), i);
@@ -108,7 +109,7 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
                 if (evaluating || matchedIndex.contains(curr_i))
                     return;
 
-                if (curr_i != prev_i)
+                if (!opened_indexes.contains(curr_i))
                     revealImage(curr_i);
             });
         }
@@ -118,41 +119,43 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
         ImageView curr_imgView = findImageViewByName("imageView" + curr_i);
         curr_imgView.setForeground(null);
 
-        if (prev_i == -1)   // no unmatched pictures revealed
-            prev_i = curr_i;
-        else
-            new Thread(() -> checkMatching(curr_i)).start();
+        opened_indexes.add(curr_i);
+
+        if (opened_indexes.size() == ncopies)   // has 2 or more unmatched revealed pictures
+            new Thread(() -> checkMatching(opened_indexes)).start();
     }
 
-    public void checkMatching(int curr_i) {
+    public void checkMatching(ArrayList<Integer> opened_indexes) {
         evaluating = true;
 
-        if (picseq.get(curr_i).equals(picseq.get(prev_i))){
+        ArrayList<String> tmp = new ArrayList<>();
+        for (Integer index : opened_indexes)
+            tmp.add(picseq.get(index));
+
+        boolean allEqual = new HashSet<String>(tmp).size() == 1;
+
+        if (allEqual){
             correct.start();
-            pair_counter+=1;
-            updateMatchCounter(pair_counter, N_pairs);
-            matchedIndex.add(curr_i);
-            matchedIndex.add(prev_i);
+            set_counter+=1;
+            updateMatchCounter(set_counter, N_sets);
+            
+            for (Integer index : opened_indexes)
+                matchedIndex.add(index);
 
             pause(1500);
 
-            if(pair_counter==sel_pics.size()) {
+            if(set_counter==sel_pics.size()) {
                 victory.start();
                 runOnUiThread(this::endGame);
             }
         }else{
-            ImageView prev_imgView = findImageViewByName("imageView" + prev_i);
-            ImageView curr_imgView = findImageViewByName("imageView" + curr_i);
-
             pause(1500);
 
-            runOnUiThread(() -> {
-                curr_imgView.setForeground(default_image);
-                prev_imgView.setForeground(default_image);
-            });
+            for (Integer index : opened_indexes)
+                runOnUiThread(() -> findImageViewByName("imageView" + index).setForeground(default_image));
         }
 
-        prev_i = -1;    // reset
+        opened_indexes.clear();    // reset
         evaluating = false;
     }
 
@@ -164,8 +167,8 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
         startActivity(result);
     }
 
-    protected void updateMatchCounter(int pair_counter, int n_pairs) {
-        matchCounter.setText(pair_counter + " / " + n_pairs + " matches");
+    protected void updateMatchCounter(int set_counter, int n_sets) {
+        matchCounter.setText(set_counter + " / " + n_sets + " matches");
     }
 
 

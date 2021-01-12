@@ -141,7 +141,6 @@
             android:id="@+id/imageView10"
             android:layout_width="133dp"
             android:layout_height="133dp"
-
             app:layout_constraintRight_toLeftOf="@+id/imageView11"
             app:srcCompat="@drawable/question" />
 
