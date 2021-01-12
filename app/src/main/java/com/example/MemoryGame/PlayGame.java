@@ -32,19 +32,17 @@ public class PlayGame extends AppCompatActivity {
     TextView timer_box;
 
     protected void getUIInfo() {
-        default_image = getDrawable(R.drawable.question);
+        default_image = getDrawable(R.drawable.question2);
         min_ImageView_id = (int) findViewById(R.id.imageView0).getUniqueDrawingId();
         matchCounter = findViewById(R.id.matchCounter);
         timer_box = findViewById(R.id.timer);
     }
 
     MediaPlayer correct;
-    MediaPlayer wrong;
     MediaPlayer victory;
 
     protected void setUIInfo() {
         correct = MediaPlayer.create(this,R.raw.correct);
-        wrong = MediaPlayer.create(this,R.raw.wrong);
         victory = MediaPlayer.create(this,R.raw.victory);
     }
 
@@ -124,7 +122,6 @@ public class PlayGame extends AppCompatActivity {
                 runOnUiThread(this::endGame);
             }
         }else{
-            wrong.start();
             ImageView prev_imgView = findImageViewByName("imageView" + prev_i);
             ImageView curr_imgView = findImageViewByName("imageView" + curr_i);
 

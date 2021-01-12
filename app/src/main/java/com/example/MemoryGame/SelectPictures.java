@@ -89,13 +89,13 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         if (running) {    // if the download process is already running
             stopService(new Intent(this, DownloadService.class));
             running = false;
-            resetUI();
         }
 
         String webpage_url = URLInput.getText().toString();
 
         if (!webpage_url.equals("")) {    //prevent empty strings
             running = true;
+            resetUI();
             setInitialValue();
 
             bar.setVisibility(View.VISIBLE);
@@ -113,7 +113,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     }
 
     protected void resetUI() {
-        for (int i = 0; i <= pos; i++){
+        for (int i = 0; i < max_pics; i++){
             ImageView imgView = findImageViewByName("imageView" + i);
             imgView.setVisibility(View.GONE);
         }
@@ -138,7 +138,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 intent.putExtra("search_session_id", Integer.toString(search_session_id));
                 startService(intent);
 
-                pause(300);
+                pause(1000);
             }
         }
     }

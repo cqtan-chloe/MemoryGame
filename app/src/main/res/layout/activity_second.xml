@@ -34,7 +34,7 @@
     <GridLayout
         android:id="@+id/gridLayout"
         android:layout_width="399dp"
-        android:layout_height="532dp"
+        android:layout_height="540dp"
         android:layout_marginLeft="4dp"
         android:layout_marginTop="30dp"
         android:columnCount="3"
@@ -117,8 +117,8 @@
 
         <ImageView
             android:id="@+id/imageView9"
-            android:layout_width="131dp"
-            android:layout_height="138dp"
+            android:layout_width="133dp"
+            android:layout_height="133dp"
             app:layout_constraintRight_toLeftOf="@+id/imageView10"
             app:srcCompat="@drawable/question" />
 
@@ -132,8 +132,8 @@
 
         <ImageView
             android:id="@+id/imageView11"
-            android:layout_width="135dp"
-            android:layout_height="139dp"
+            android:layout_width="133dp"
+            android:layout_height="133dp"
             app:srcCompat="@drawable/question" />
 
     </GridLayout>
