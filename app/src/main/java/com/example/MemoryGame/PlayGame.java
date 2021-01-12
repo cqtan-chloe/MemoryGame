@@ -131,7 +131,6 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
 
             if(pair_counter==sel_pics.size()) {
                 victory.start();
-                pause(1000);
                 runOnUiThread(this::endGame);
             }
         }else{

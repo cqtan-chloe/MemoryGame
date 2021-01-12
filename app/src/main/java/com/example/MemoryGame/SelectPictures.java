@@ -54,6 +54,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     TextView progressBarStatus;
     EditText URLInput;
     TextView instruction;
+    Button go;
 
     protected void setInitialValue() {
         pos = -1;
@@ -69,6 +70,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         progressBarStatus = findViewById(R.id.barText);
         URLInput = findViewById(R.id.webpage_url);
         instruction = findViewById(R.id.instruction);
+        go = findViewById(R.id.go);
     }
 
     @Override
@@ -79,6 +81,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         setInitialValue();
         getUIInfo();
         fetch.setOnClickListener(this);
+        go.setOnClickListener(this);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
@@ -87,29 +90,35 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        if (running) {    // if the download process is already running
-            stopService(new Intent(this, DownloadService.class));
-            running = false;
-            resetUI();
-        }
+        if (v.getId() == R.id.go)
+            if (nsel == max_sel)
+                play_game(sel_pics);
 
-        webpage_url = URLInput.getText().toString();
+        if (v.getId() == R.id.fetch) {
+            if (running) {    // if the download process is already running
+                stopService(new Intent(this, DownloadService.class));
+                running = false;
+                resetUI();
+            }
 
-        if (!webpage_url.equals("")) {    //prevent empty strings
-            running = true;
-            setInitialValue();
+            webpage_url = URLInput.getText().toString();
 
-            bar.setVisibility(View.VISIBLE);
-            progressBarStatus.setVisibility(View.VISIBLE);
+            if (!webpage_url.equals("")) {    //prevent empty strings
+                running = true;
+                setInitialValue();
 
-            search_session_id++;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    StartDownloading(webpage_url, search_session_id);
-                }
-            }).start();
-            waitForSelectedPics();
+                bar.setVisibility(View.VISIBLE);
+                progressBarStatus.setVisibility(View.VISIBLE);
+
+                search_session_id++;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        StartDownloading(webpage_url, search_session_id);
+                    }
+                }).start();
+                waitForSelectedPics();
+            }
         }
     }
 
@@ -263,8 +272,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                         imgView.setImageAlpha(255);     //change back to original ImageAlpha
                     }
 
-                    if (nsel == max_sel)
-                        play_game(sel_pics);
+//                    if (nsel == max_sel)
+//                        play_game(sel_pics);
                 }
             }
         };
