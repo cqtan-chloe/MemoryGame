@@ -90,6 +90,14 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         fetch.setOnClickListener(this);
         go.setOnClickListener(this);
 
+//        if (savedInstanceState != null) {
+//            webpage_url = savedInstanceState.getString("webpage_url");
+//            System.out.println(webpage_url);
+//            URLInput.setText(webpage_url);
+//        } else {
+//            System.out.println("savedInstanceState is null");
+//        }
+
         Spinner spinner = findViewById(R.id.spinner);
         ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, NCOPIES);
         spinner.setAdapter(adapter);
@@ -320,7 +328,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                         sel_pics.add(filenames.get(index));
                         nsel++;
                         imgView.setImageAlpha(150);
-
                     } else {
                         sel_pics.remove(filenames.get(index));
                         nsel--;
@@ -342,11 +349,11 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 
 //    @Override
 //    public void onSaveInstanceState(Bundle savedInstanceState) {
-//        super.onSaveInstanceState(savedInstanceState);
 //        // Save UI state changes to the savedInstanceState.
 //        // This bundle will be passed to onCreate if the process is
 //        // killed and restarted.
 //        savedInstanceState.putString("webpage_url", webpage_url);
+//        super.onSaveInstanceState(savedInstanceState);
 //    }
 //
 //    @Override
@@ -356,6 +363,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
 //        // This bundle has also been passed to onCreate.
 //        webpage_url = savedInstanceState.getString("webpage_url");
 //        URLInput.setText(webpage_url);
+//        System.out.println(webpage_url);
 //    }
 
     @Override
