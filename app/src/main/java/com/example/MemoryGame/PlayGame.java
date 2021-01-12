@@ -60,7 +60,7 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_playgame);
+        setContentView(R.layout.activity_playgame12);
 
         getUIInfo();
         setUIInfo();
