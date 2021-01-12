@@ -45,7 +45,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected int PIC_SELECTED = 1;
 
     int nsel;
-    int max_sel = 6;
+    int max_sel = 12;    // number of pictures to select
+    int ncopies = 2;    // number of copies per picture
     ArrayList<String> sel_pics;
 
     Button fetch;
@@ -282,6 +283,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected void play_game(ArrayList<String> sel_pics) {
         Intent play_game = new Intent(this, PlayGame.class);
         play_game.putStringArrayListExtra("sel_pics", sel_pics);
+        play_game.putExtra("ncopies", ncopies);
         finish();
 
         startActivity(play_game);

@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class PlayGame extends AppCompatActivity implements View.OnClickListener {
 
     int N_pairs;
+    int ncells;
+    int ncopies;
     int prev_i = -1;
     int pair_counter = 0;
     boolean evaluating = false;
@@ -35,7 +37,7 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
     Button quit;
 
     protected void getUIInfo() {
-        default_image = getDrawable(R.drawable.question);
+        default_image = getDrawable(R.drawable.question2);
         min_ImageView_id = (int) findViewById(R.id.imageView0).getUniqueDrawingId();
         matchCounter = findViewById(R.id.matchCounter);
         timer_box = findViewById(R.id.timer);
@@ -60,20 +62,25 @@ public class PlayGame extends AppCompatActivity implements View.OnClickListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_playgame12);
+
+        sel_pics = getIntent().getStringArrayListExtra("sel_pics");
+        N_pairs = sel_pics.size();
+        ncopies = getIntent().getIntExtra("ncopies", -1);
+        ncells = N_pairs * ncopies;
+
+        int id = getResources().getIdentifier("activity_playgame" + ncells, "layout", getPackageName());
+        setContentView(id);
+        System.out.println(R.layout.activity_playgame16 + ", " + id);
 
         getUIInfo();
         setUIInfo();
         quit.setOnClickListener(this);
 
-        sel_pics = getIntent().getStringArrayListExtra("sel_pics");
-        N_pairs = sel_pics.size();
-
         playMemoryGame(sel_pics);
     }
 
     protected void playMemoryGame(ArrayList<String> sel_pics) {
-        for (int i = 0; i < N_pairs * 2; i++)
+        for (int i = 0; i < N_pairs * ncopies; i++)
             picseq.add(sel_pics.get(i % N_pairs));
 
         Collections.shuffle(picseq);

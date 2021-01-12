@@ -62,8 +62,6 @@
             android:id="@+id/imageView0"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView4"
             app:layout_constraintRight_toLeftOf="@+id/imageView1"
             app:srcCompat="@drawable/x" />
@@ -72,8 +70,6 @@
             android:id="@+id/imageView1"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView5"
             app:layout_constraintRight_toLeftOf="@+id/imageView2"
             app:srcCompat="@drawable/x" />
@@ -82,8 +78,6 @@
             android:id="@+id/imageView2"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView6"
             app:layout_constraintRight_toLeftOf="@+id/imageView3"
             app:srcCompat="@drawable/x" />
@@ -92,8 +86,6 @@
             android:id="@+id/imageView3"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView7"
             app:srcCompat="@drawable/x" />
 
@@ -102,8 +94,6 @@
             android:id="@+id/imageView4"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView8"
             app:layout_constraintRight_toLeftOf="@+id/imageView5"
             app:srcCompat="@drawable/x" />
@@ -112,8 +102,6 @@
             android:id="@+id/imageView5"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView9"
             app:layout_constraintRight_toLeftOf="@+id/imageView6"
             app:srcCompat="@drawable/x" />
@@ -122,8 +110,6 @@
             android:id="@+id/imageView6"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView10"
             app:layout_constraintRight_toLeftOf="@+id/imageView7"
             app:srcCompat="@drawable/x" />
@@ -132,8 +118,6 @@
             android:id="@+id/imageView7"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView11"
             app:srcCompat="@drawable/x" />
 
@@ -142,8 +126,6 @@
             android:id="@+id/imageView8"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView12"
             app:layout_constraintRight_toLeftOf="@+id/imageView9"
             app:srcCompat="@drawable/x" />
@@ -152,8 +134,6 @@
             android:id="@+id/imageView9"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView13"
             app:layout_constraintRight_toLeftOf="@+id/imageView10"
             app:srcCompat="@drawable/x" />
@@ -162,8 +142,6 @@
             android:id="@+id/imageView10"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView14"
             app:layout_constraintRight_toLeftOf="@+id/imageView11"
             app:srcCompat="@drawable/x" />
@@ -172,8 +150,6 @@
             android:id="@+id/imageView11"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView15"
             app:srcCompat="@drawable/x" />
 
@@ -182,8 +158,6 @@
             android:id="@+id/imageView12"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView16"
             app:layout_constraintRight_toLeftOf="@+id/imageView13"
             app:srcCompat="@drawable/x" />
@@ -192,8 +166,6 @@
             android:id="@+id/imageView13"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView17"
             app:layout_constraintRight_toLeftOf="@+id/imageView14"
             app:srcCompat="@drawable/x" />
@@ -202,8 +174,6 @@
             android:id="@+id/imageView14"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView18"
             app:layout_constraintRight_toLeftOf="@+id/imageView15"
             app:srcCompat="@drawable/x" />
@@ -212,8 +182,6 @@
             android:id="@+id/imageView15"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView19"
             app:srcCompat="@drawable/x" />
 
@@ -222,8 +190,6 @@
             android:id="@+id/imageView16"
             android:layout_width="101dp"
             android:layout_height="99dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView20"
             app:layout_constraintRight_toLeftOf="@+id/imageView17"
             app:srcCompat="@drawable/x" />
@@ -232,8 +198,6 @@
             android:id="@+id/imageView17"
             android:layout_width="99dp"
             android:layout_height="103dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView21"
             app:layout_constraintRight_toLeftOf="@+id/imageView18"
             app:srcCompat="@drawable/x" />
@@ -242,8 +206,6 @@
             android:id="@+id/imageView18"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView22"
             app:layout_constraintRight_toLeftOf="@+id/imageView19"
             app:srcCompat="@drawable/x" />
@@ -252,25 +214,19 @@
             android:id="@+id/imageView19"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:srcCompat="@drawable/x" />
 
         <ImageView
             android:id="@+id/imageView20"
             android:layout_width="101dp"
             android:layout_height="99dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/imageView23"
             app:srcCompat="@drawable/x" />
 
         <ImageView
             android:id="@+id/imageView21"
-            android:layout_width="99dp"
-            android:layout_height="103dp"
-            android:visibility="gone"
-            tools:visibility="visible"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             app:layout_constraintRight_toLeftOf="@+id/imageView22"
             app:srcCompat="@drawable/x" />
 
@@ -278,8 +234,6 @@
             android:id="@+id/imageView22"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:layout_constraintRight_toLeftOf="@+id/imageView23"
             app:srcCompat="@drawable/x" />
 
@@ -287,8 +241,6 @@
             android:id="@+id/imageView23"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             app:srcCompat="@drawable/x" />
 
     </GridLayout>

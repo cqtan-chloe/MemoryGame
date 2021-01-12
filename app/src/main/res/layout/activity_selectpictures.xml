@@ -214,8 +214,8 @@
 
         <ImageView
             android:id="@+id/imageView16"
-            android:layout_width="101dp"
-            android:layout_height="99dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:visibility="gone"
             tools:visibility="visible"
             app:layout_constraintRight_toLeftOf="@+id/imageView17"
@@ -223,8 +223,8 @@
 
         <ImageView
             android:id="@+id/imageView17"
-            android:layout_width="99dp"
-            android:layout_height="103dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:visibility="gone"
             tools:visibility="visible"
             app:layout_constraintRight_toLeftOf="@+id/imageView18"
