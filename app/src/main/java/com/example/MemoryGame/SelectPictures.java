@@ -15,10 +15,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.File;
@@ -74,6 +76,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         go = findViewById(R.id.go);
     }
 
+    Integer[] NCOPIES  = {2, 3, 4};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +87,10 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         getUIInfo();
         fetch.setOnClickListener(this);
         go.setOnClickListener(this);
+
+        Spinner dropdown = findViewById(R.id.spinner);
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, NCOPIES);
+        dropdown.setAdapter(adapter);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
