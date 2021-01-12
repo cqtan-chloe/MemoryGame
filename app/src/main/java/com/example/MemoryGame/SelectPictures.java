@@ -39,6 +39,7 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     int max_pics = 20;
     private int search_session_id = 0;
     String webpage_url;
+    Thread downloadThread;
     private boolean running = false;
     int pos;
     ArrayList<String> filenames;
@@ -48,8 +49,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     protected int PIC_SELECTED = 1;
 
     int nsel;
-    int max_sel = 6;    // number of pictures to select
-    int ncopies = 2;    // number of copies per picture
+    ArrayList<Integer> max_sel;    // number of pictures to select
+    int ncopies = 2;    // number of copies per picture (default)
     ArrayList<String> sel_pics;
 
     Button fetch;
@@ -102,6 +103,25 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
         ncopies = NCOPIES[position];
+
+        int string_id = getResources().getIdentifier("instruction" + ncopies, "string", getPackageName());
+        instruction.setText(string_id);
+
+        max_sel = new ArrayList<>();    // reset or initialize
+
+        switch (ncopies) {
+            case 2:
+                max_sel.add(6); max_sel.add(8); max_sel.add(10); max_sel.add(12);
+                break;
+            case 3:
+                max_sel.add(4); max_sel.add(8);
+                break;
+            case 4:
+                max_sel.add(3); max_sel.add(4); max_sel.add(5);
+                break;
+            default:
+                max_sel.add(6);
+        }
     }
 
     @Override
@@ -112,39 +132,42 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.go)
-            if (nsel == max_sel)
+            if (max_sel.contains(nsel))
                 play_game(sel_pics);
 
         if (v.getId() == R.id.fetch) {
             if (running) {    // if the download process is already running
                 stopService(new Intent(this, DownloadService.class));
                 running = false;
-                resetUI();
             }
 
             webpage_url = URLInput.getText().toString();
 
             if (!webpage_url.equals("")) {    //prevent empty strings
                 running = true;
+                resetUI();
                 setInitialValue();
 
+                instruction.setVisibility(View.GONE);
                 bar.setVisibility(View.VISIBLE);
                 progressBarStatus.setVisibility(View.VISIBLE);
 
                 search_session_id++;
-                new Thread(new Runnable() {
+                downloadThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         StartDownloading(webpage_url, search_session_id);
                     }
-                }).start();
+                });
+
+                downloadThread.start();
                 waitForSelectedPics();
             }
         }
     }
 
     protected void resetUI() {
-        for (int i = 0; i <= pos; i++){
+        for (int i = 0; i < max_pics; i++){
             ImageView imgView = findImageViewByName("imageView" + i);
             imgView.setVisibility(View.GONE);
         }
@@ -292,9 +315,6 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                         nsel--;
                         imgView.setImageAlpha(255);     //change back to original ImageAlpha
                     }
-
-//                    if (nsel == max_sel)
-//                        play_game(sel_pics);
                 }
             }
         };

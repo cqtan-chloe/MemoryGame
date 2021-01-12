@@ -3,5 +3,8 @@
     <string name="completed">Completed</string>
     <string name="playAgain">Play Again</string>
     <string name="instruction">Please select 6 images :)</string>
+    <string name="instruction2">Select 6, 8, 10 or 12 images</string>
+    <string name="instruction3">Select 4 or 8 images</string>
+    <string name="instruction4">Select 3, 4 or 5 images</string>
     <string name="yourTime">Your Time</string>
 </resources>
