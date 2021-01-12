@@ -35,17 +35,29 @@ public class DownloadService extends Service {
         String action = intent.getAction();
         if (action.compareToIgnoreCase("download") == 0)
         {
-            String where = intent.getStringExtra("where");
-            String filename = intent.getStringExtra("filename");
-            String search_session_id_return = intent.getStringExtra("search_session_id");
+            // new thread needs to be created from within service
+            // to run code in service in threads other than main thread
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String where = intent.getStringExtra("where");
+                    String filename = intent.getStringExtra("filename");
+                    String search_session_id_return = intent.getStringExtra("search_session_id");
 
-            downloadToSave(where, filename);
-            resizeImage(filename);
-            Intent intent1 = new Intent();
-            intent1.setAction("download_ok");
-            intent1.putExtra("filename", filename);
-            intent1.putExtra("search_session_id_return", search_session_id_return);
-            sendBroadcast(intent1);
+//                    System.out.println(filename);
+//                    System.out.println("this Thread ID: " + Thread.currentThread().getId());
+//                    System.out.println("this Thread Name: " + Thread.currentThread().getName());
+
+                    if (downloadToSave(where, filename)) {
+                        resizeImage(filename);
+                        Intent intent1 = new Intent();
+                        intent1.setAction("download_ok");
+                        intent1.putExtra("filename", filename);
+                        intent1.putExtra("search_session_id_return", search_session_id_return);
+                        sendBroadcast(intent1);
+                    }
+                }
+            }).start();
         }
 
         // don't restart this task if killed by Android system

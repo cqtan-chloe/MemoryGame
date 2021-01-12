@@ -98,6 +98,9 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
         IntentFilter filter = new IntentFilter();
         filter.addAction("download_ok");
         registerReceiver(receiver, filter);
+
+//        System.out.println("MainUI Thread ID: " + Thread.currentThread().getId());
+//        System.out.println("MainUI Thread Name: " + Thread.currentThread().getName());
     }
 
     @Override
@@ -156,6 +159,8 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 downloadThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
+//                        System.out.println("downloadThread ID: " + Thread.currentThread().getId());
+//                        System.out.println("downloadThread Name: " + Thread.currentThread().getName());
                         StartDownloading(webpage_url, search_session_id);
                     }
                 });
@@ -174,6 +179,10 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
     }
 
     protected void StartDownloading(String webpage_url, int search_session_id){
+//        System.out.println("in StartDownloading");
+//        System.out.println("this Thread ID: " + Thread.currentThread().getId());
+//        System.out.println("this Thread Name: " + Thread.currentThread().getName());
+
         ArrayList<String> urls = getUrls(webpage_url, max_pics);
         if (urls != null & urls.size() > 0) {   //invalid website
 
@@ -190,8 +199,10 @@ public class SelectPictures extends AppCompatActivity implements View.OnClickLis
                 intent.putExtra("filename", filenames.get(i));
                 intent.putExtra("where", urls.get(i));
                 intent.putExtra("search_session_id", Integer.toString(search_session_id));
-                startService(intent);
 
+                // runs on main thread by default despite being called from bkgdThread
+                // still runs on main thread despite being surrounded with new Thread(new Runnable .....
+                startService(intent);
                 pause(300);
             }
         }
